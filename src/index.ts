@@ -1,3 +1,1 @@
-const name = "ruxi";
-
-export { name };
+export * from "./components";
