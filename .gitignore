@@ -4,3 +4,7 @@ node_modules
 # Package
 dist
 ruxi-*.tgz
+
+#Misc
+*.cache
+*.log
