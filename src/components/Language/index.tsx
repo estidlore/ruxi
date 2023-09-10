@@ -7,17 +7,15 @@ import type {
   LanguageConfig,
   LanguageContext,
   LanguageEntries,
-  LanguageEntry,
-  LanguageTranslation,
-  LanguageTranslationResult
+  LanguageEntry
 } from "./types";
 
-const createLanguageProvider = <T extends string, D extends T>(
+const createLanguageProvider = <T extends string, M extends T>(
   Context: Context<LanguageContext<T>>,
-  config: LanguageConfig<T, D>
+  config: LanguageConfig<T, M>
 ): Container => {
   const LanguageProvider = ({ children }: ContainerProps): JSX.Element => {
-    const [language, setLanguage] = useState<T>(config.default);
+    const [language, setLanguage] = useState<T>(config.main);
 
     const value: LanguageContext<T> = useMemo(
       () => ({
@@ -34,13 +32,13 @@ const createLanguageProvider = <T extends string, D extends T>(
   return LanguageProvider;
 };
 
-const createLanguageContext = <T extends string, D extends T>(
-  config: LanguageConfig<T, D>
+const createLanguageContext = <T extends string, M extends T>(
+  config: LanguageConfig<T, M>
 ): {
   Provider: Container;
   translation: <E extends LanguageEntry>(
-    entries: LanguageEntries<T, E, D>
-  ) => LanguageTranslationResult<T, E, D>;
+    entries: LanguageEntries<T, M, E>
+  ) => { entries: LanguageEntries<T, M, E>; useTranslation: () => E };
   useLanguage: () => LanguageContext<T>;
 } => {
   const Context = createContext<LanguageContext<T> | null>(null);
@@ -48,20 +46,15 @@ const createLanguageContext = <T extends string, D extends T>(
   const useLanguage = createUseContext(Context, "Language");
 
   const translation = <E extends LanguageEntry>(
-    entries: LanguageEntries<T, E, D>
-  ): LanguageTranslationResult<T, E, D> => {
-    const useTranslation = (): LanguageTranslation<T, E> => {
-      const lang = useLanguage();
+    entries: LanguageEntries<T, M, E>
+  ): { entries: LanguageEntries<T, M, E>; useTranslation: () => E } => {
+    const useTranslation = (): E => {
+      const { language } = useLanguage();
       const t = useMemo(
-        () =>
-          Object.assign(
-            {},
-            entries[config.default],
-            entries[lang.language.code]
-          ),
-        [lang.language.code]
+        () => Object.assign({}, entries[config.main], entries[language.code]),
+        [language.code]
       );
-      return { lang, t };
+      return t;
     };
 
     return { entries, useTranslation };
