@@ -4,6 +4,8 @@ import { useUpdate } from "utils/hooks";
 
 import type {
   FormOptions,
+  FormParsed,
+  FormParser,
   FormState,
   FormValidator,
   FormValues,
@@ -30,11 +32,31 @@ const getInitErrors = <T extends FormValues>(
   return errors;
 };
 
-const useForm = <T extends FormValues>({
+const getParser = <T extends FormValues, P extends FormParsed<T>>(
+  parser?: FormParser<T, P>,
+): ((values: T) => P) => {
+  return (values) => {
+    const parsed = Object.assign({}, values) as P;
+    if (parser === undefined) {
+      return parsed;
+    }
+    Object.keys(parser).map((key: keyof T) => {
+      const value = values[key];
+      const parse = parser[key as keyof FormParser<T, P>];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      parsed[key as keyof P] = parse(value as any) as P[keyof P];
+    });
+    return parsed;
+  };
+};
+
+const useForm = <T extends FormValues, P extends FormParsed<T>>({
   initialValues,
   onSubmit,
+  parser,
   validator,
-}: FormOptions<T>): FormState<T> => {
+}: FormOptions<T, P>): FormState<T> => {
+  const parse = useMemo(() => getParser(parser), []);
   const initErrors = useMemo(() => getInitErrors(initialValues, validator), []);
   const initTouches = useMemo(() => getInitTouches(initialValues), []);
 
@@ -54,7 +76,7 @@ const useForm = <T extends FormValues>({
   }, []);
 
   const submit = useCallback(() => {
-    onSubmit?.(values);
+    onSubmit?.(parse(values));
     reset();
   }, [values]);
 
