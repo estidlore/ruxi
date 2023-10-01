@@ -1,3 +1,16 @@
+interface YupObjectSchema<T extends object> {
+  fields:
+    | object
+    | {
+        [K in keyof T]: {
+          __outputType: T[K];
+        };
+      };
+  validateSyncAt: (path: string, value: unknown) => unknown;
+}
+
+type YupSchema<T extends object> = YupObjectSchema<Partial<T>>;
+
 type FormValues = Record<string, unknown>;
 type FormParsed<T extends FormValues> = Record<keyof T, unknown>;
 type FormParser<T extends FormValues, P extends FormParsed<T>> = {
@@ -11,7 +24,7 @@ interface FormOptions<T extends FormValues, P extends FormParsed<T>> {
   initialValues: T;
   onSubmit?: (values: P) => void;
   parser?: FormParser<T, P>;
-  validator?: FormValidator<T>;
+  validation?: FormValidator<T> | YupSchema<P>;
 }
 
 interface FieldState<T> {
@@ -39,4 +52,5 @@ export type {
   FormState,
   FormValidator,
   FormValues,
+  YupSchema,
 };

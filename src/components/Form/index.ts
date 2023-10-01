@@ -9,7 +9,29 @@ import type {
   FormState,
   FormValidator,
   FormValues,
+  YupSchema,
 } from "./types";
+
+const getValidator = <T extends FormValues, P extends FormParsed<T>>(
+  validation?: FormValidator<T> | YupSchema<P>,
+): FormValidator<T> | undefined => {
+  if (validation?.hasOwnProperty("fields")) {
+    const schema = validation as YupSchema<P>;
+    const validator = {} as FormValidator<T>;
+    Object.keys(schema.fields).forEach((field: keyof T) => {
+      validator[field] = (value): string | undefined => {
+        try {
+          schema.validateSyncAt(field as string, { [field]: value });
+          return undefined;
+        } catch (error: unknown) {
+          return (error as { errors: string[] }).errors[0];
+        }
+      };
+    });
+    return validator;
+  }
+  return validation as FormValidator<T> | undefined;
+};
 
 const getInitTouches = <T extends FormValues>(
   initialValues: T,
@@ -54,9 +76,10 @@ const useForm = <T extends FormValues, P extends FormParsed<T>>({
   initialValues,
   onSubmit,
   parser,
-  validator,
+  validation,
 }: FormOptions<T, P>): FormState<T> => {
   const parse = useMemo(() => getParser(parser), []);
+  const validator = useMemo(() => getValidator(validation), []);
   const initErrors = useMemo(() => getInitErrors(initialValues, validator), []);
   const initTouches = useMemo(() => getInitTouches(initialValues), []);
 
