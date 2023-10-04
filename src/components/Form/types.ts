@@ -41,6 +41,7 @@ interface FormState<T extends FormValues> {
   fields: {
     [K in keyof T]: FieldState<T[K]>;
   };
+  isValid: boolean;
   reset: () => void;
   submit: () => void;
 }

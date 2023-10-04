@@ -1,18 +1,21 @@
 module.exports = {
   env: {
     amd: true,
-    browser: true
+    browser: true,
   },
   extends: ["estidlore/react"],
   globals: {
     module: true,
-    window: true
+    window: true,
   },
   parser: "@typescript-eslint/parser",
   parserOptions: {
     project: ["./tsconfig.json"],
     sourceType: "module",
-    tsconfigRootDir: __dirname
+    tsconfigRootDir: __dirname,
   },
-  root: true
+  root: true,
+  rules: {
+    "max-lines-per-function": ["error", 100],
+  },
 };

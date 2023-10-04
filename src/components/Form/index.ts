@@ -33,17 +33,18 @@ const getValidator = <T extends FormValues, P extends FormParsed<T>>(
   return validation as FormValidator<T> | undefined;
 };
 
-const getInitTouches = <T extends FormValues>(
+const getTouches = <T extends FormValues>(
   initialValues: T,
+  touched = false,
 ): Record<keyof T, boolean> => {
   const touches = {} as Record<keyof T, boolean>;
   Object.keys(initialValues).forEach((field: keyof T) => {
-    touches[field] = false;
+    touches[field] = touched;
   });
   return touches;
 };
 
-const getInitErrors = <T extends FormValues>(
+const getErrors = <T extends FormValues>(
   initialValues: T,
   validator?: FormValidator<T>,
 ): Record<keyof T, string | undefined> => {
@@ -80,12 +81,14 @@ const useForm = <T extends FormValues, P extends FormParsed<T>>({
 }: FormOptions<T, P>): FormState<T> => {
   const parse = useMemo(() => getParser(parser), []);
   const validator = useMemo(() => getValidator(validation), []);
-  const initErrors = useMemo(() => getInitErrors(initialValues, validator), []);
-  const initTouches = useMemo(() => getInitTouches(initialValues), []);
 
-  const [errors, updateErrors] = useUpdate(initErrors);
-  const [touches, setTouches] = useUpdate(initTouches);
-  const [values, setValues] = useUpdate(initialValues);
+  const [errors, updateErrors] = useUpdate(getErrors(initialValues, validator));
+  const [touches, updateTouches] = useUpdate(getTouches(initialValues));
+  const [values, updateValues] = useUpdate(initialValues);
+
+  const isValid = useMemo(() => {
+    return Object.values(errors).every((el) => el === undefined);
+  }, [errors]);
 
   const validate = useCallback((field: keyof T, value: T[keyof T]): void => {
     const error = validator?.[field](value);
@@ -93,32 +96,40 @@ const useForm = <T extends FormValues, P extends FormParsed<T>>({
   }, []);
 
   const reset = useCallback(() => {
-    setValues(initialValues);
-    updateErrors(initErrors);
-    setTouches(initTouches);
+    updateValues(initialValues);
+    updateErrors(getErrors(initialValues, validator));
+    updateTouches(getTouches(initialValues));
+  }, []);
+
+  const touch = useCallback(() => {
+    updateTouches(getTouches(initialValues, true));
   }, []);
 
   const submit = useCallback(() => {
-    onSubmit?.(parse(values));
-    reset();
-  }, [values]);
+    if (isValid) {
+      onSubmit?.(parse(values));
+      reset();
+    } else {
+      touch();
+    }
+  }, [isValid, values]);
 
   const fields = {} as FormState<T>["fields"];
   Object.keys(initialValues).forEach((field: keyof T) => {
     fields[field] = {
       meta: { error: errors[field], touched: touches[field] },
       onBlur: (): void => {
-        setTouches({ [field]: true } as object);
+        updateTouches({ [field]: true } as object);
       },
       onChange: (value): void => {
-        setValues({ [field]: value } as object);
+        updateValues({ [field]: value } as object);
         validate(field, value);
       },
       value: values[field],
     };
   });
 
-  return { fields, reset, submit };
+  return { fields, isValid, reset, submit };
 };
 
 export { useForm };
