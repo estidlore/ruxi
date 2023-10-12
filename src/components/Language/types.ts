@@ -19,7 +19,7 @@ type LanguageEntry = DeepRecord<Interpolator | string>;
 type LanguageEntries<
   T extends string,
   M extends T,
-  E extends LanguageEntry
+  E extends LanguageEntry,
 > = DeepPartial<Record<T, E>> & Record<M, E>;
 
 export type {
@@ -27,5 +27,5 @@ export type {
   LanguageConfig,
   LanguageContext,
   LanguageEntries,
-  LanguageEntry
+  LanguageEntry,
 };

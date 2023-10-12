@@ -7,12 +7,12 @@ import type {
   LanguageConfig,
   LanguageContext,
   LanguageEntries,
-  LanguageEntry
+  LanguageEntry,
 } from "./types";
 
 const createLanguageProvider = <T extends string, M extends T>(
   Context: Context<LanguageContext<T>>,
-  config: LanguageConfig<T, M>
+  config: LanguageConfig<T, M>,
 ): Container => {
   const LanguageProvider = ({ children }: ContainerProps): JSX.Element => {
     const [language, setLanguage] = useState<T>(config.main);
@@ -21,9 +21,9 @@ const createLanguageProvider = <T extends string, M extends T>(
       () => ({
         language: Object.assign({ code: language }, config.languages[language]),
         languages: config.languages,
-        setLanguage
+        setLanguage,
       }),
-      [language]
+      [language],
     );
 
     return <Context.Provider value={value}>{children}</Context.Provider>;
@@ -33,11 +33,11 @@ const createLanguageProvider = <T extends string, M extends T>(
 };
 
 const createLanguageContext = <T extends string, M extends T>(
-  config: LanguageConfig<T, M>
+  config: LanguageConfig<T, M>,
 ): {
   Provider: Container;
   translation: <E extends LanguageEntry>(
-    entries: LanguageEntries<T, M, E>
+    entries: LanguageEntries<T, M, E>,
   ) => { entries: LanguageEntries<T, M, E>; useTranslation: () => E };
   useLanguage: () => LanguageContext<T>;
 } => {
@@ -46,13 +46,13 @@ const createLanguageContext = <T extends string, M extends T>(
   const useLanguage = createUseContext(Context, "Language");
 
   const translation = <E extends LanguageEntry>(
-    entries: LanguageEntries<T, M, E>
+    entries: LanguageEntries<T, M, E>,
   ): { entries: LanguageEntries<T, M, E>; useTranslation: () => E } => {
     const useTranslation = (): E => {
       const { language } = useLanguage();
       const t = useMemo(
         () => Object.assign({}, entries[config.main], entries[language.code]),
-        [language.code]
+        [language.code],
       );
       return t;
     };
@@ -63,7 +63,7 @@ const createLanguageContext = <T extends string, M extends T>(
   return {
     Provider,
     translation,
-    useLanguage
+    useLanguage,
   };
 };
 

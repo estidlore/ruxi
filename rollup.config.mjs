@@ -14,28 +14,28 @@ export default defineConfig([
     output: [
       {
         file: packageJson.main,
-        format: "cjs"
+        format: "cjs",
       },
       {
         file: packageJson.module,
-        format: "esm"
-      }
+        format: "esm",
+      },
     ],
     plugins: [
       peerDepsExternal(),
       resolve(),
       commonjs(),
       typescript({ tsconfig: "./tsconfig.json", declaration: false }),
-      terser()
-    ]
+      terser(),
+    ],
   },
   {
     input: "src/index.ts",
     output: [{ file: "dist/index.d.ts", format: "esm" }],
     plugins: [
       dts({
-        tsconfig: "./tsconfig.json"
-      })
-    ]
-  }
+        tsconfig: "./tsconfig.json",
+      }),
+    ],
+  },
 ]);

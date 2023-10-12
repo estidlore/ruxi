@@ -8,9 +8,9 @@ import type { ThemeConfig, ThemeContext } from "./types";
 const createThemeContext = <
   T extends string,
   D extends T,
-  K extends string = never
+  K extends string = never,
 >(
-  config: ThemeConfig<T, D, K>
+  config: ThemeConfig<T, D, K>,
 ): {
   ThemeProvider: Container;
   useTheme: () => ThemeContext<T, K>;
@@ -25,10 +25,10 @@ const createThemeContext = <
 const createThemeProvider = <
   T extends string,
   D extends T,
-  K extends string = never
+  K extends string = never,
 >(
   Context: Context<ThemeContext<T, K>>,
-  config: ThemeConfig<T, D, K>
+  config: ThemeConfig<T, D, K>,
 ): Container => {
   const { initial, themes } = config;
 
@@ -37,7 +37,7 @@ const createThemeProvider = <
 
     const themeData = useMemo(
       () => Object.assign({ name: theme }, themes[theme]),
-      [theme]
+      [theme],
     );
 
     return (
