@@ -14,7 +14,8 @@ interface LanguageContext<T extends string> {
   setLanguage: (code: T) => void;
 }
 
-type Interpolator = <T extends unknown[]>(...vals: T) => string;
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+type Interpolator = (...vals: any[]) => string;
 type LanguageEntry = DeepRecord<Interpolator | string>;
 type LanguageEntries<
   T extends string,
